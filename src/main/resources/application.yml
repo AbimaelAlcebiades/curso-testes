@@ -1,0 +1,45 @@
+server:
+  port: 8010
+
+logging:
+  level:
+    root: ERROR
+    br:
+      com:
+        abimael: DEBUG
+
+spring:
+  application:
+    name: cursotestes
+  docker:
+    compose:
+      enabled: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    topics:
+      gps: input-raw-data-crearecloud.jimi-rastreador.gps
+      heartbeat: input-raw-data-crearecloud.jimi-rastreador.heartbeat
+      alert: input-raw-data-crearecloud.jimi-rastreador.alert
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cursotestes
+    username: postgres
+    password: postgres
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+  flyway:
+    schemas: cursotestes
+    locations: classpath:db/migration,classpath:db/seed
+    baseline-on-migrate: false
+  output:
+    ansi:
+      enabled: ALWAYS
+

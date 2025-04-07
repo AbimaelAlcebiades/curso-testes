@@ -1,0 +1,63 @@
+networks:
+  public:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local
+
+services:
+  curso-tests-db:
+    container_name: curso-tests-db
+    hostname: curso-tests-db
+    image: 'postgres:13'
+    environment:
+      - TZ=America/Sao_Paulo
+      - POSTGRES_DB=cursotestes
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - public
+
+  zookeeper-curso-testes:
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    networks:
+      - public
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka-curso-testes:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka
+    networks:
+      - public
+    depends_on:
+      - zookeeper-curso-testes
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    ports:
+      - "8080:8080"
+    restart: always
+    networks:
+      - public
+    environment:
+      - DYNAMIC_CONFIG_ENABLED=true
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
