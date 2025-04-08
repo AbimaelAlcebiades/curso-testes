@@ -1,7 +1,7 @@
 package br.com.abimael.cursotestes.enums;
 
 public enum TaskStatus {
-  CREATE,
+  CREATED,
   FAILED,
   COMPLETED
 }

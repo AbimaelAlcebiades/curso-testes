@@ -1,7 +1,8 @@
 package br.com.abimael.cursotestes.controller;
 
+import static br.com.abimael.cursotestes.enums.TaskType.PLAYBACK;
+import static br.com.abimael.cursotestes.utils.builders.CreateTaskBuilder.*;
 import static br.com.abimael.cursotestes.utils.builders.CreateTaskBuilder.EMPTY_CREATE_TASK;
-import static br.com.abimael.cursotestes.utils.builders.CreateTaskBuilder.VALID_CREATE_TASK;
 import static br.com.abimael.cursotestes.utils.builders.TaskJsonBuilder.VALID_TASK_JSON;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -30,15 +31,15 @@ class TaskControllerTest {
   @DisplayName("WHEN insert valid task THEN should save using TaskService")
   void insertValidTask() {
     // SETUP
-    CreateTask validCreateTask = VALID_CREATE_TASK();
+    CreateTask validCreateTask = CREATE_TASK_WITH("DEVICE_ID", PLAYBACK);
 
     when(taskService.insert(validCreateTask)).thenReturn(VALID_TASK_JSON());
 
     // PROCESSING
-    TaskJson createdTaskJson = taskController.insert(validCreateTask);
+    TaskJson savedTaskJson = taskController.insert(validCreateTask);
 
     // ASSERTS
-    assertNotNull(createdTaskJson);
+    assertNotNull(savedTaskJson);
   }
 
   @Test
@@ -61,14 +62,14 @@ class TaskControllerTest {
   @Test
   @SneakyThrows
   @DisplayName("WHEN search existing task THEN should return task using TaskService")
-  void retrieveTask() {
+  void getTaskTaskById() {
     // SETUP
     Long taskId = 1L;
 
     when(taskService.getTask(taskId)).thenReturn(VALID_TASK_JSON());
 
     // PROCESSING
-    TaskJson taskJsonFound = taskController.retrieve(taskId);
+    TaskJson taskJsonFound = taskController.getTaskById(taskId);
 
     // ASSERTS
     assertNotNull(taskJsonFound);
@@ -84,7 +85,7 @@ class TaskControllerTest {
 
     // PROCESSING
     ServiceException serviceException =
-        assertThrows(ServiceException.class, () -> taskController.retrieve(taskIdNotExist));
+        assertThrows(ServiceException.class, () -> taskController.getTaskById(taskIdNotExist));
 
     // ASSERTS
     assertEquals("NOT FOUND TASK", serviceException.getMessage());
