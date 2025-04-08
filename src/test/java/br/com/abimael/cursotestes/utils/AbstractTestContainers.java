@@ -20,7 +20,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.Properties;
 
 import static br.com.abimael.cursotestes.utils.AbstractTestContainers.DockerPostgresDataSourceInitializer;
-import static br.com.abimael.cursotestes.utils.SqlScriptMerger.mergeAllSqlScripts;
+import static br.com.abimael.cursotestes.utils.DatabaseUtils.cleanDataBase;
+import static br.com.abimael.cursotestes.utils.DatabaseUtils.setConnectionConfigs;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -63,8 +64,7 @@ public abstract class AbstractTestContainers {
                     .withUsername(username)
                     .withPassword(password)
                     .withDatabaseName(dataBase)
-                    .withLogConsumer(logger)
-                    .withInitScript(mergeAllSqlScripts("src/test/resources", "merged_init.sql"));
+                    .withLogConsumer(logger);
 
     kafkaContainer =
             new KafkaContainer(parse("confluentinc/cp-kafka:7.2.1"))
@@ -88,14 +88,24 @@ public abstract class AbstractTestContainers {
               "spring.datasource.url=" + postgresDBContainer.getJdbcUrl(),
               "spring.kafka.bootstrap-servers=" + kafkaContainer.getBootstrapServers());
 
-      /*log.info("spring.datasource.user={}", postgresDBContainer.getUsername());
+      log.info("spring.datasource.user={}", postgresDBContainer.getUsername());
       log.info("spring.datasource.password={}", postgresDBContainer.getPassword());
       log.info("spring.datasource.url={}", postgresDBContainer.getJdbcUrl());
-      log.info("spring.kafka.bootstrap-servers={}", kafkaContainer.getBootstrapServers());*/
+      log.info("spring.kafka.bootstrap-servers={}", kafkaContainer.getBootstrapServers());
 
       kafkaConsumerProperties = buildKafkaConsumerProperties(kafkaContainer);
 
     }
+  }
+
+  public static void cleanEnvironment() {
+
+    setConnectionConfigs(
+            postgresDBContainer.getJdbcUrl(),
+            postgresDBContainer.getUsername(),
+            postgresDBContainer.getPassword());
+
+    cleanDataBase();
   }
 
   public static Properties buildKafkaConsumerProperties(KafkaContainer kafkaContainer) {
