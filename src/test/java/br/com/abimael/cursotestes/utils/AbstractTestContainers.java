@@ -1,5 +1,15 @@
 package br.com.abimael.cursotestes.utils;
 
+import static br.com.abimael.cursotestes.utils.DatabaseUtils.cleanDataBase;
+import static br.com.abimael.cursotestes.utils.DatabaseUtils.setConnectionConfigs;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
+import static org.slf4j.LoggerFactory.getLogger;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
+import static org.springframework.kafka.support.serializer.JsonDeserializer.TRUSTED_PACKAGES;
+import static org.testcontainers.utility.DockerImageName.*;
+import static org.testcontainers.utility.DockerImageName.parse;
+
+import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.ClassRule;
@@ -17,20 +27,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.Properties;
-
-import static br.com.abimael.cursotestes.utils.AbstractTestContainers.DockerPostgresDataSourceInitializer;
-import static br.com.abimael.cursotestes.utils.DatabaseUtils.cleanDataBase;
-import static br.com.abimael.cursotestes.utils.DatabaseUtils.setConnectionConfigs;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
-import static org.slf4j.LoggerFactory.getLogger;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
-import static org.springframework.kafka.support.serializer.JsonDeserializer.TRUSTED_PACKAGES;
-import static org.testcontainers.utility.DockerImageName.parse;
-
 @SpringBootTest(webEnvironment = DEFINED_PORT)
 @ContextConfiguration(
-        initializers = DockerPostgresDataSourceInitializer.class)
+    initializers = AbstractTestContainers.DockerPostgresDataSourceInitializer.class)
 @Testcontainers
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("integrationtests")
@@ -38,84 +37,82 @@ import static org.testcontainers.utility.DockerImageName.parse;
 @AutoConfigureMockMvc
 public abstract class AbstractTestContainers {
 
-  @ClassRule
-  public static PostgreSQLContainer<?> postgresDBContainer;
+  @ClassRule public static PostgreSQLContainer<?> postgresDBContainer;
 
-  @ClassRule
-  public static KafkaContainer kafkaContainer;
+  @ClassRule public static KafkaContainer kafkaContainer;
 
   public static Properties kafkaConsumerProperties;
 
   static {
-    YamlConfigLoader configLoader = new YamlConfigLoader("application-integrationtests.yml");
+    startPostgresContainer();
+    startKafkaContainer();
+  }
 
-    String username =
-            (String) configLoader.getNestedConfigValue("spring", "datasource", "username");
-    String password =
-            (String) configLoader.getNestedConfigValue("spring", "datasource", "password");
-    int exposedPorts = 5432;
-    String dataBase = "jimi";
-
-    Slf4jLogConsumer logger = new Slf4jLogConsumer(getLogger(AbstractTestContainers.class));
+  private static void startPostgresContainer() {
+    var config = new YamlConfigLoader("application-integrationtests.yml");
+    String username = (String) config.getNestedConfigValue("spring", "datasource", "username");
+    String password = (String) config.getNestedConfigValue("spring", "datasource", "password");
 
     postgresDBContainer =
-            new PostgreSQLContainer<>(parse("postgres:13-alpine"))
-                    .withExposedPorts(exposedPorts)
-                    .withUsername(username)
-                    .withPassword(password)
-                    .withDatabaseName(dataBase)
-                    .withLogConsumer(logger);
-
-    kafkaContainer =
-            new KafkaContainer(parse("confluentinc/cp-kafka:7.2.1"))
-                    .withEmbeddedZookeeper()
-                    .withExposedPorts(9093);
+        new PostgreSQLContainer<>("postgres:13-alpine")
+            .withExposedPorts(5432)
+            .withUsername(username)
+            .withPassword(password)
+            .withDatabaseName("cursotestes")
+            .withLogConsumer(new Slf4jLogConsumer(getLogger(AbstractTestContainers.class)));
 
     postgresDBContainer.start();
+  }
+
+  private static void startKafkaContainer() {
+    kafkaContainer =
+        new KafkaContainer(parse("confluentinc/cp-kafka:7.2.1"))
+            .withEmbeddedZookeeper()
+            .withExposedPorts(9093);
+
     kafkaContainer.start();
   }
 
   public static class DockerPostgresDataSourceInitializer
-          implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+      implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     @Override
-    public void initialize(ConfigurableApplicationContext applicationContext) {
-
+    public void initialize(ConfigurableApplicationContext context) {
       TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
-              applicationContext,
-              "spring.datasource.user=" + postgresDBContainer.getUsername(),
-              "spring.datasource.password=" + postgresDBContainer.getPassword(),
-              "spring.datasource.url=" + postgresDBContainer.getJdbcUrl(),
-              "spring.kafka.bootstrap-servers=" + kafkaContainer.getBootstrapServers());
+          context,
+          "spring.datasource.user=" + postgresDBContainer.getUsername(),
+          "spring.datasource.password=" + postgresDBContainer.getPassword(),
+          "spring.datasource.url=" + postgresDBContainer.getJdbcUrl(),
+          "spring.kafka.bootstrap-servers=" + kafkaContainer.getBootstrapServers());
 
+      logContainerConfigs();
+      kafkaConsumerProperties = buildKafkaConsumerProperties();
+    }
+
+    private void logContainerConfigs() {
       log.info("spring.datasource.user={}", postgresDBContainer.getUsername());
       log.info("spring.datasource.password={}", postgresDBContainer.getPassword());
       log.info("spring.datasource.url={}", postgresDBContainer.getJdbcUrl());
       log.info("spring.kafka.bootstrap-servers={}", kafkaContainer.getBootstrapServers());
-
-      kafkaConsumerProperties = buildKafkaConsumerProperties(kafkaContainer);
-
     }
   }
 
   public static void cleanEnvironment() {
-
     setConnectionConfigs(
-            postgresDBContainer.getJdbcUrl(),
-            postgresDBContainer.getUsername(),
-            postgresDBContainer.getPassword());
-
+        postgresDBContainer.getJdbcUrl(),
+        postgresDBContainer.getUsername(),
+        postgresDBContainer.getPassword());
     cleanDataBase();
   }
 
-  public static Properties buildKafkaConsumerProperties(KafkaContainer kafkaContainer) {
-    Properties consumerProps = new Properties();
-    consumerProps.put(BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
-    consumerProps.put(GROUP_ID_CONFIG, "jimi-listener-v6-integration-tests");
-    consumerProps.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-    consumerProps.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-    consumerProps.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
-    consumerProps.put(TRUSTED_PACKAGES, "br.com.crearesistemas.*");
-    return consumerProps;
+  private static Properties buildKafkaConsumerProperties() {
+    Properties props = new Properties();
+    props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
+    props.put(GROUP_ID_CONFIG, "curso-testes-integration-tests");
+    props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+    props.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+    props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
+    props.put(TRUSTED_PACKAGES, "br.com.crearesistemas.*");
+    return props;
   }
 }
