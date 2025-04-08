@@ -15,7 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static br.com.abimael.cursotestes.enums.TaskType.PLAYBACK;
+import static br.com.abimael.cursotestes.builders.CreateTaskBuilder.EMPTY_CREATE_TASK;
+import static br.com.abimael.cursotestes.builders.CreateTaskBuilder.VALID_CREATE_TASK;
+import static br.com.abimael.cursotestes.builders.TaskJsonBuilder.VALID_TASK_JSON;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -33,10 +35,9 @@ class TaskControllerTest {
   @DisplayName("WHEN insert valid task THEN should save using TaskService")
   void insertValidTask() {
     //SETUP
-    CreateTask validCreateTask = CreateTask.builder().deviceId("DEVICE_ID").taskType(PLAYBACK).build();
-    TaskJson taskJson = TaskJson.builder().build();
+    CreateTask validCreateTask = VALID_CREATE_TASK();
 
-    when(taskService.insert(validCreateTask)).thenReturn(taskJson);
+    when(taskService.insert(validCreateTask)).thenReturn(VALID_TASK_JSON());
 
     //PROCESSING
     TaskJson createdTaskJson = taskController.insert(validCreateTask);
@@ -50,7 +51,7 @@ class TaskControllerTest {
   @DisplayName("WHEN taskService throws Exception THEN should throws ServiceException")
   void insertInvalidTask() {
     //SETUP
-    CreateTask emptyCreateTask = CreateTask.builder().build();
+    CreateTask emptyCreateTask = EMPTY_CREATE_TASK();
 
     when(taskService.insert(emptyCreateTask)).thenThrow(new CreateTaskException("ERROR"));
 
@@ -67,9 +68,8 @@ class TaskControllerTest {
   void retrieveTask() {
     //SETUP
     Long taskId = 1L;
-    TaskJson taskJson = TaskJson.builder().build();
 
-    when(taskService.getTask(taskId)).thenReturn(taskJson);
+    when(taskService.getTask(taskId)).thenReturn(VALID_TASK_JSON());
 
     //PROCESSING
     TaskJson taskJsonFound = taskController.retrieve(taskId);
