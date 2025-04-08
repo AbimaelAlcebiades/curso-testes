@@ -1,4 +1,4 @@
-package br.com.abimael.cursotestes;
+package br.com.abimael.cursotestes.utils;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -17,7 +17,7 @@ public class YamlConfigLoader {
       config = yaml.load(in);
     } catch (Exception e) {
       throw new RuntimeException(
-          "Failed to load YAML configuration file. Error: " + e.getMessage());
+              "Failed to load YAML configuration file. Error: " + e.getMessage());
     }
   }
 

@@ -1,4 +1,4 @@
-package br.com.abimael.cursotestes;
+package br.com.abimael.cursotestes.utils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -23,16 +23,16 @@ public class SqlScriptMerger {
       }
 
       List<File> sqlFiles =
-          asList(requireNonNull(sqlFolder.listFiles((dir, name) -> name.endsWith(".sql"))));
+              asList(requireNonNull(sqlFolder.listFiles((dir, name) -> name.endsWith(".sql"))));
 
       sqlFiles.sort(comparing(File::getName));
 
       String mergedFilePath = outputDir + "/" + mergedFileName;
 
       try (BufferedWriter writer =
-          new BufferedWriter(
-              new OutputStreamWriter(
-                  new FileOutputStream(mergedFilePath), StandardCharsets.UTF_8))) {
+                   new BufferedWriter(
+                           new OutputStreamWriter(
+                                   new FileOutputStream(mergedFilePath), StandardCharsets.UTF_8))) {
         for (File sqlFile : sqlFiles) {
           writer.write("-- Script: " + sqlFile.getName() + "\n");
           String content = readString(sqlFile.toPath()).replace("\r\n", "\n"); // Garante LF

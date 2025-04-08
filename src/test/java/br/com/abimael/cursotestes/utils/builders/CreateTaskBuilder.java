@@ -1,4 +1,4 @@
-package br.com.abimael.cursotestes.builders;
+package br.com.abimael.cursotestes.utils.builders;
 
 import br.com.abimael.cursotestes.model.CreateTask;
 

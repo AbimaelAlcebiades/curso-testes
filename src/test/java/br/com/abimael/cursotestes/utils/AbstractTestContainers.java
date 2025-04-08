@@ -1,14 +1,4 @@
-package br.com.abimael.cursotestes;
-
-import static br.com.abimael.cursotestes.AbstractTestContainers.*;
-import static br.com.abimael.cursotestes.SqlScriptMerger.mergeAllSqlScripts;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
-import static org.slf4j.LoggerFactory.*;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
-import static org.springframework.kafka.support.serializer.JsonDeserializer.TRUSTED_PACKAGES;
-import static org.testcontainers.utility.DockerImageName.parse;
-
-import java.util.Properties;
+package br.com.abimael.cursotestes.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -26,6 +16,16 @@ import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.util.Properties;
+
+import static br.com.abimael.cursotestes.utils.AbstractTestContainers.DockerPostgresDataSourceInitializer;
+import static br.com.abimael.cursotestes.utils.SqlScriptMerger.mergeAllSqlScripts;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
+import static org.slf4j.LoggerFactory.getLogger;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
+import static org.springframework.kafka.support.serializer.JsonDeserializer.TRUSTED_PACKAGES;
+import static org.testcontainers.utility.DockerImageName.parse;
 
 @SpringBootTest(webEnvironment = DEFINED_PORT)
 @ContextConfiguration(

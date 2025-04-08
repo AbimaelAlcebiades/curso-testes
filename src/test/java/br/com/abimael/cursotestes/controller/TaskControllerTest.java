@@ -1,6 +1,5 @@
-package br.com.abimael.cursotestes;
+package br.com.abimael.cursotestes.controller;
 
-import br.com.abimael.cursotestes.controller.TaskController;
 import br.com.abimael.cursotestes.exception.CreateTaskException;
 import br.com.abimael.cursotestes.exception.ServiceException;
 import br.com.abimael.cursotestes.exception.TaskNotFoundException;
@@ -15,9 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static br.com.abimael.cursotestes.builders.CreateTaskBuilder.EMPTY_CREATE_TASK;
-import static br.com.abimael.cursotestes.builders.CreateTaskBuilder.VALID_CREATE_TASK;
-import static br.com.abimael.cursotestes.builders.TaskJsonBuilder.VALID_TASK_JSON;
+import static br.com.abimael.cursotestes.utils.builders.CreateTaskBuilder.EMPTY_CREATE_TASK;
+import static br.com.abimael.cursotestes.utils.builders.CreateTaskBuilder.VALID_CREATE_TASK;
+import static br.com.abimael.cursotestes.utils.builders.TaskJsonBuilder.VALID_TASK_JSON;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
