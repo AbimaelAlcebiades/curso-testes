@@ -1,8 +1,12 @@
 package br.com.abimael.cursotestes.controller;
 
-import br.com.abimael.cursotestes.exception.CreateTaskException;
+import static br.com.abimael.cursotestes.utils.builders.CreateTaskBuilder.EMPTY_CREATE_TASK;
+import static br.com.abimael.cursotestes.utils.builders.CreateTaskBuilder.VALID_CREATE_TASK;
+import static br.com.abimael.cursotestes.utils.builders.TaskJsonBuilder.VALID_TASK_JSON;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
 import br.com.abimael.cursotestes.exception.ServiceException;
-import br.com.abimael.cursotestes.exception.TaskNotFoundException;
 import br.com.abimael.cursotestes.model.CreateTask;
 import br.com.abimael.cursotestes.model.TaskJson;
 import br.com.abimael.cursotestes.services.TaskService;
@@ -14,34 +18,26 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static br.com.abimael.cursotestes.utils.builders.CreateTaskBuilder.EMPTY_CREATE_TASK;
-import static br.com.abimael.cursotestes.utils.builders.CreateTaskBuilder.VALID_CREATE_TASK;
-import static br.com.abimael.cursotestes.utils.builders.TaskJsonBuilder.VALID_TASK_JSON;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(SpringExtension.class)
 class TaskControllerTest {
 
-  @Mock
-  private TaskService taskService;
+  @Mock private TaskService taskService;
 
-  @InjectMocks
-  private TaskController taskController;
+  @InjectMocks private TaskController taskController;
 
   @Test
   @SneakyThrows
   @DisplayName("WHEN insert valid task THEN should save using TaskService")
   void insertValidTask() {
-    //SETUP
+    // SETUP
     CreateTask validCreateTask = VALID_CREATE_TASK();
 
     when(taskService.insert(validCreateTask)).thenReturn(VALID_TASK_JSON());
 
-    //PROCESSING
+    // PROCESSING
     TaskJson createdTaskJson = taskController.insert(validCreateTask);
 
-    //ASSERTS
+    // ASSERTS
     assertNotNull(createdTaskJson);
   }
 
@@ -49,15 +45,16 @@ class TaskControllerTest {
   @SneakyThrows
   @DisplayName("WHEN taskService throws Exception THEN should throws ServiceException")
   void insertInvalidTask() {
-    //SETUP
+    // SETUP
     CreateTask emptyCreateTask = EMPTY_CREATE_TASK();
 
-    when(taskService.insert(emptyCreateTask)).thenThrow(new CreateTaskException("ERROR"));
+    when(taskService.insert(emptyCreateTask)).thenThrow(new ServiceException("ERROR"));
 
-    //PROCESSING
-    ServiceException serviceException = assertThrows(ServiceException.class, () -> taskController.insert(emptyCreateTask));
+    // PROCESSING
+    ServiceException serviceException =
+        assertThrows(ServiceException.class, () -> taskController.insert(emptyCreateTask));
 
-    //ASSERTS
+    // ASSERTS
     assertEquals("ERROR", serviceException.getMessage());
   }
 
@@ -65,15 +62,15 @@ class TaskControllerTest {
   @SneakyThrows
   @DisplayName("WHEN search existing task THEN should return task using TaskService")
   void retrieveTask() {
-    //SETUP
+    // SETUP
     Long taskId = 1L;
 
     when(taskService.getTask(taskId)).thenReturn(VALID_TASK_JSON());
 
-    //PROCESSING
+    // PROCESSING
     TaskJson taskJsonFound = taskController.retrieve(taskId);
 
-    //ASSERTS
+    // ASSERTS
     assertNotNull(taskJsonFound);
   }
 
@@ -81,15 +78,15 @@ class TaskControllerTest {
   @SneakyThrows
   @DisplayName("WHEN search not exist task THEN should throws TaskNotFoundException")
   void notFoundTask() {
-    //SETUP
+    // SETUP
     Long taskIdNotExist = 1L;
-    when(taskService.getTask(taskIdNotExist)).thenThrow(new TaskNotFoundException("NOT FOUND TASK"));
+    when(taskService.getTask(taskIdNotExist)).thenThrow(new ServiceException("NOT FOUND TASK"));
 
-    //PROCESSING
-    ServiceException serviceException = assertThrows(ServiceException.class, () -> taskController.retrieve(taskIdNotExist));
+    // PROCESSING
+    ServiceException serviceException =
+        assertThrows(ServiceException.class, () -> taskController.retrieve(taskIdNotExist));
 
-    //ASSERTS
+    // ASSERTS
     assertEquals("NOT FOUND TASK", serviceException.getMessage());
   }
-
 }

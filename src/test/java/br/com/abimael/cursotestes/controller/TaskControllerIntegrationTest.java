@@ -12,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class TaskControllerIntegrationTest extends AbstractTestContainers {
 
-
   @BeforeEach
   void setUp() {
     cleanEnvironment();
@@ -22,9 +21,8 @@ class TaskControllerIntegrationTest extends AbstractTestContainers {
   @Test
   @DisplayName("WHEN POST valid TaskJson THEN should insert task on database")
   void testPostValidTaskJson() {
-    //SETUP
-    //PROCESSING
-    //ASSERT
+    // SETUP
+    // PROCESSING
+    // ASSERT
   }
-
 }

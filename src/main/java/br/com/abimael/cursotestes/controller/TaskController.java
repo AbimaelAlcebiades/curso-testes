@@ -14,18 +14,10 @@ public class TaskController {
   private final TaskService taskService;
 
   public TaskJson insert(CreateTask createTask) throws ServiceException {
-    try {
-      return taskService.insert(createTask);
-    } catch (Exception e) {
-      throw new ServiceException(e.getMessage());
-    }
+    return taskService.insert(createTask);
   }
 
   public TaskJson retrieve(final Long taskId) throws ServiceException {
-    try {
-      return taskService.getTask(taskId);
-    } catch (Exception e) {
-      throw new ServiceException(e.getMessage());
-    }
+    return taskService.getTask(taskId);
   }
 }
