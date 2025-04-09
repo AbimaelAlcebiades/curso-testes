@@ -6,6 +6,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import br.com.abimael.cursotestes.exception.ServiceException;
 import br.com.abimael.cursotestes.model.CreateTask;
 import br.com.abimael.cursotestes.model.TaskJson;
+import br.com.abimael.cursotestes.model.UpdateTask;
 import br.com.abimael.cursotestes.services.TaskService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -25,5 +26,10 @@ public class TaskController {
   @GetMapping(value = "/task", produces = APPLICATION_JSON_VALUE)
   public TaskJson getTaskById(@RequestParam("taskId") Long taskId) throws ServiceException {
     return taskService.getTask(taskId);
+  }
+
+  @PutMapping(value = "/task", produces = APPLICATION_JSON_VALUE)
+  public TaskJson update(@RequestBody UpdateTask updateTask) throws ServiceException {
+    return taskService.update(updateTask);
   }
 }

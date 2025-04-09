@@ -28,6 +28,10 @@ public class TasksMockMvc {
     return mockMvc.perform(get(urlTemplate).contentType(APPLICATION_JSON));
   }
 
+  public ResultActions performPutJson(String urlTemplate, String content) throws Exception {
+    return mockMvc.perform(put(urlTemplate).contentType(APPLICATION_JSON).content(content));
+  }
+
   public ResultActions performGetWithQueryParameters(
       String baseUrl, Map<String, Object> queryParameters) throws Exception {
 

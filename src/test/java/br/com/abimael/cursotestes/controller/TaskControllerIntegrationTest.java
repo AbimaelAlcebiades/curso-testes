@@ -4,15 +4,19 @@ import static br.com.abimael.cursotestes.enums.TaskStatus.*;
 import static br.com.abimael.cursotestes.enums.TaskType.PLAYBACK;
 import static br.com.abimael.cursotestes.enums.TaskType.SNAPSHOT;
 import static br.com.abimael.cursotestes.utils.KafkaUtils.getJsonFromTopic;
+import static br.com.abimael.cursotestes.utils.UpdateTaskBuilder.*;
 import static br.com.abimael.cursotestes.utils.builders.CreateTaskBuilder.*;
 import static br.com.abimael.cursotestes.utils.builders.TaskJsonBuilder.*;
 import static java.time.Instant.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.testcontainers.shaded.com.github.dockerjava.core.MediaType.APPLICATION_JSON;
 
+import br.com.abimael.cursotestes.enums.TaskStatus;
 import br.com.abimael.cursotestes.model.CreateTask;
 import br.com.abimael.cursotestes.model.TaskJson;
+import br.com.abimael.cursotestes.model.UpdateTask;
 import br.com.abimael.cursotestes.utils.AbstractTestContainers;
+import br.com.abimael.cursotestes.utils.UpdateTaskBuilder;
 import br.com.abimael.cursotestes.utils.mock.TasksMockMvc;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -115,16 +119,27 @@ class TaskControllerIntegrationTest extends AbstractTestContainers {
   @DisplayName("WHEN POST valid TaskJson THEN should insert message on topic")
   void testTaskJsonInTopic() {
     // SETUP
-    CreateTask createTask = VALID_CREATE_TASK();
+    CreateTask createTask1 = CREATE_TASK_WITH("DEVICE1", PLAYBACK);
+    UpdateTask updateTask1 = UPDATE_TASK_WITH(1L, FAILED);
+
+    CreateTask createTask2 = CREATE_TASK_WITH("DEVICE2", PLAYBACK);
+    UpdateTask updateTask2 = UPDATE_TASK_WITH(2L, COMPLETED);
 
     // PROCESSING
-    MvcResult mvcResult =
-        tasksMockMvc.performPostJson("/task", mapper.writeValueAsString(createTask)).andReturn();
+    tasksMockMvc.performPostJson("/task", mapper.writeValueAsString(createTask1)).andReturn();
+    tasksMockMvc.performPutJson("/task", mapper.writeValueAsString(updateTask1)).andReturn();
+
+    tasksMockMvc.performPostJson("/task", mapper.writeValueAsString(createTask2)).andReturn();
+    tasksMockMvc.performPutJson("/task", mapper.writeValueAsString(updateTask2)).andReturn();
 
     // WAIT FOR ASYNC FLOWS
     List<JsonNode> tasksCompleted = getJsonFromTopic("tasks-completed");
+    TaskJson taskJson = mapper.treeToValue(tasksCompleted.getFirst(), TaskJson.class);
 
     // ASSERT
     assertEquals(1, tasksCompleted.size());
+    assertEquals(2L, taskJson.getId());
+    assertEquals("DEVICE2", taskJson.getDeviceId());
+    assertEquals(COMPLETED, taskJson.getStatus());
   }
 }
