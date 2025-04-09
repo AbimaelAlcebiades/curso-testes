@@ -3,6 +3,7 @@ package br.com.abimael.cursotestes.controller;
 import static br.com.abimael.cursotestes.enums.TaskStatus.*;
 import static br.com.abimael.cursotestes.enums.TaskType.PLAYBACK;
 import static br.com.abimael.cursotestes.enums.TaskType.SNAPSHOT;
+import static br.com.abimael.cursotestes.utils.KafkaUtils.getJsonFromTopic;
 import static br.com.abimael.cursotestes.utils.builders.CreateTaskBuilder.*;
 import static br.com.abimael.cursotestes.utils.builders.TaskJsonBuilder.*;
 import static java.time.Instant.*;
@@ -13,8 +14,10 @@ import br.com.abimael.cursotestes.model.CreateTask;
 import br.com.abimael.cursotestes.model.TaskJson;
 import br.com.abimael.cursotestes.utils.AbstractTestContainers;
 import br.com.abimael.cursotestes.utils.mock.TasksMockMvc;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.util.List;
 import java.util.Map;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.*;
@@ -105,5 +108,23 @@ class TaskControllerIntegrationTest extends AbstractTestContainers {
     assertEquals(2L, taskJsonSnapshot.getId());
     assertEquals(SNAPSHOT, taskJsonSnapshot.getType());
     assertEquals("DEVICE2", taskJsonSnapshot.getDeviceId());
+  }
+
+  @SneakyThrows
+  @Test
+  @DisplayName("WHEN POST valid TaskJson THEN should insert message on topic")
+  void testTaskJsonInTopic() {
+    // SETUP
+    CreateTask createTask = VALID_CREATE_TASK();
+
+    // PROCESSING
+    MvcResult mvcResult =
+        tasksMockMvc.performPostJson("/task", mapper.writeValueAsString(createTask)).andReturn();
+
+    // WAIT FOR ASYNC FLOWS
+    List<JsonNode> tasksCompleted = getJsonFromTopic("tasks-completed");
+
+    // ASSERT
+    assertEquals(1, tasksCompleted.size());
   }
 }
