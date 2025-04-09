@@ -69,7 +69,7 @@ class TaskControllerIntegrationTest extends AbstractTestContainers {
 
   @SneakyThrows
   @Test
-  @DisplayName("WHEN GET from endpoint /task THEN should return tasks on database")
+  @DisplayName("WHEN GET task by id from endpoint /task THEN should return task from database")
   void testGetTaskJson() {
     // SETUP
     CreateTask createTaskPlayback = CREATE_TASK_WITH("DEVICE1", PLAYBACK);

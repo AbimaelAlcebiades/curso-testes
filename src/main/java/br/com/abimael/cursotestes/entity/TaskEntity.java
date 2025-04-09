@@ -14,7 +14,6 @@ import lombok.*;
 @Entity
 @Table(name = "tasks", schema = "cursotestes")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
