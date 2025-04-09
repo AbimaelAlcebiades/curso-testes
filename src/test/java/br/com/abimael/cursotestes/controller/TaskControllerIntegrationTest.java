@@ -11,12 +11,10 @@ import static java.time.Instant.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.testcontainers.shaded.com.github.dockerjava.core.MediaType.APPLICATION_JSON;
 
-import br.com.abimael.cursotestes.enums.TaskStatus;
 import br.com.abimael.cursotestes.model.CreateTask;
 import br.com.abimael.cursotestes.model.TaskJson;
 import br.com.abimael.cursotestes.model.UpdateTask;
 import br.com.abimael.cursotestes.utils.AbstractTestContainers;
-import br.com.abimael.cursotestes.utils.UpdateTaskBuilder;
 import br.com.abimael.cursotestes.utils.mock.TasksMockMvc;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,5 +1,7 @@
 package br.com.abimael.cursotestes.event;
 
+import static br.com.abimael.cursotestes.enums.TaskStatus.COMPLETED;
+
 import br.com.abimael.cursotestes.broker.TasksCompletedProducer;
 import br.com.abimael.cursotestes.model.TaskJson;
 import lombok.AllArgsConstructor;
@@ -7,8 +9,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
-
-import static br.com.abimael.cursotestes.enums.TaskStatus.COMPLETED;
 
 @AllArgsConstructor
 @Slf4j
